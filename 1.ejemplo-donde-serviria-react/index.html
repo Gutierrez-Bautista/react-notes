@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ejemplo 1</title>
+
+  <style>
+    body {
+      background-color: #333;
+      color: #fff
+    }
+
+    button {
+      background-color: rgb(103, 156, 230);
+      border-radius: 6px;
+      border: none;
+      padding: .4rem;
+      cursor: pointer;
+      transition: all .2s ease;
+
+      &:hover {
+        background-color: rgb(71, 119, 188);
+        transform: scale(1.1);
+      }
+    }
+
+    .liked {
+      background-color: rgb(238, 114, 114);
+
+      &:hover {
+        background-color: rgb(190, 56, 56);
+      }
+    }
+  </style>
+</head>
+<body>
+  <button data-id="1" data-status="dont-liked">like</button>
+  <button data-id="2" data-status="dont-liked">like</button>
+  <button data-id="3" data-status="dont-liked">like</button>
+  <script src="./index.js"></script>
+</body>
+</html>

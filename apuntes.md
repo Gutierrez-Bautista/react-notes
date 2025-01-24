@@ -104,6 +104,10 @@ root.render(app)
 
 Esto es nuevamente muy engorroso y es por eso que se creó la extensión de archivos ".jsx"
 
+### Punto de Entrada de una Aplicación
+
+Es básicamente lo que acabamos de hacer, es el archivo encargado de renderizar nuestra aplicación cuando se ejecuta.
+
 ## JSX ⚛️
 
 JSX está basado en XML y permite escribir lo mismo que vimos antes pero de una forma mucho más comprensible, como si escribieramos código HTML
@@ -145,3 +149,144 @@ Esto crea un proyecto base con React, Vite y esLint ya configurados
 Posteriormente vamos al proyecto con `cd nombre-del-proyecto` y ejecutamos primero un `npm install` para que se instalen las dependecias base.
 
 Con esto ya tenemos nuestro proyecto base con el cual empezar a trabajar, si ejecutamos el comando `npm run dev` nos mostrara el proyecto base que crea Vite, que no es más que algunos componentes de React y algo de interactividad.
+
+## Proyecto Básico de React Creado con Vite
+
+Si vamos a un proyecto recién creado con Vite nos vamos a encontrar con una serie de archivos y carpetas, algunos de ellos deberiamos ya conocerlos como el package.json, el .gitignore o el README.md pero hay otros nuevos que vamos a explicar a continuación:
+
+- **eslint.config.js**: Configura esLint, uno de los linters más utilizados, para trabajar con el estandar de React
+- **vite.config.js**: Configura Vite para poder hacer la compilación de JSX a "React normal"
+- **index.html**: Es el archivo en el que se renderizará nuestra aplicación de React
+- **public/**: Por convención es donde se almacenan los archivos estáticos
+- **src/**: Es donde se encuentra nuestra aplicación de React
+- **src/main.jsx**: Punto de entrada de la aplicación
+- **src/App.jsx**: Es la aplicación creada por Vite
+
+Todos estos archivos de la carpeta "src" podemos eliminarlos para trabajar desde cero pero por lo general eliminaremos solo los estilos y el código por defecto del App.jsx (además obvio de los SVG de la aplicación por defecto de Vite)
+
+## Componentes
+
+Un componente es en esencia una función que crea un elemento, lo que permite reutilizarlo mucho más fácil, veamos un ejemplo de esto.
+
+Supongamos que tenemos el siguiente código que genera 3 botones con un ícono de like:
+
+```jsx
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.Fragment>
+    <button>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" />
+      </svg>
+      button 1
+    </button>
+    <button>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" />
+      </svg>
+      button 2
+    </button>
+    <button>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" />
+      </svg>
+      button 3
+    </button>
+  </React.Fragment>
+)
+```
+
+Como es evidente esto es poco práctico por lo que podemos crear la siguiente función para poder crear botones cambiando el texto:
+
+```jsx
+const createBtn = ({ text }) => {
+    return (
+      <button>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round" 
+            d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" />
+        </svg>
+        {text}
+      </button>
+    )
+}
+```
+
+De esta forma cuando vamos a renderizar solo tenemos que hacer lo siguiente:
+
+```jsx
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.Fragment>
+    {createBtn({ text: 'button 1' })}
+    {createBtn({ text: 'button 2' })}
+    {createBtn({ text: 'button 3' })}
+  </React.Fragment>
+)
+```
+
+No obstante esto sigue siendo imperativo, no declarativo, nosotros lo que buscamos es que conceptualmente digamos "mostrar un botón" y no "crear un botón". Para ello lo primero es cambiar el nombre a la función, pasamos de "createBtn" a "Button" que va a ser el nombre del componente y en segundo lugar debemos cambiar la forma en la que llamamos la función, en vez de hacerlo de la forma tradicional lo hacemos como si "Button" fuera una "etiqueta HTML" y los parametros sus atributos, con esto el código quedaría de la siguiente manera
+
+```jsx
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+
+const Button = ({text}) => {
+    return (
+      <button>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" />
+        </svg>
+        {text}
+      </button>
+    )
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.Fragment>
+    <Button text="Boton 1" />
+    <Button text="Boton 2" />
+    <Button text="Boton 3" />
+  </React.Fragment>
+)
+```
+
+Este codigo se encuentra en el primer proyecto de ejemplo en [este](./3.example-projects/00-first-component/src/main.jsx) archivo
+
+Notese que el nombre del componente está en PascalCase, esto es necesario porque no sabemos los elementos que se agregarán a HTML en un futuro y debemos tenerlo en cuenta porque si intentamos llamar a nuestro componente como "button" cuando intentemos usarlo React interpretará que queremos usar el botón de HTML y no el nuestro, al usar PascalCase evitamos estas colisiones y la posibilidad de que ocurran en un futuro.
+
+Otra cosa a tener en cuenta es que por lo general cada componente se crea por separado y después se unen es decir que por un lado deberiamos tener:
+
+```jsx
+// path: MyComponent.jsx
+export MyComponent () {
+  return (
+    // ... código del componente
+  )
+}
+```
+
+Y por otro lado en donde lo necesitemos tener lo siguiente:
+
+```jsx
+// path: main.jsx
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { MyComponent } from './MyComponent.jsx'
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <MyComponent />
+)
+```

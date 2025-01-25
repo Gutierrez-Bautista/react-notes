@@ -166,7 +166,7 @@ Todos estos archivos de la carpeta "src" podemos eliminarlos para trabajar desde
 
 ## Componentes
 
-Un componente es en esencia una función que crea un elemento, lo que permite reutilizarlo mucho más fácil, veamos un ejemplo de esto.
+Un componente es en esencia una función que crea un elemento, lo que permite reutilizarlo mucho más fácil, también podemos pensarlos como una fábrica de elementos. Veamos un ejemplo de esto:
 
 Supongamos que tenemos el siguiente código que genera 3 botones con un ícono de like:
 
@@ -263,6 +263,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 )
 ```
 
+Otra cosa a nivel conceptual es que a los parametros que le pasamos a los compoenentes se les suele llamar **propiedades** del componente 
+
 Este codigo se encuentra en el primer proyecto de ejemplo en [este](./3.example-projects/00-first-component/src/main.jsx) archivo
 
 Notese que el nombre del componente está en PascalCase, esto es necesario porque no sabemos los elementos que se agregarán a HTML en un futuro y debemos tenerlo en cuenta porque si intentamos llamar a nuestro componente como "button" cuando intentemos usarlo React interpretará que queremos usar el botón de HTML y no el nuestro, al usar PascalCase evitamos estas colisiones y la posibilidad de que ocurran en un futuro.
@@ -271,7 +273,7 @@ Otra cosa a tener en cuenta es que por lo general cada componente se crea por se
 
 ```jsx
 // path: MyComponent.jsx
-export MyComponent () {
+export MyComponent ({ txt }) {
   return (
     // ... código del componente
   )
@@ -287,6 +289,301 @@ import ReactDOM from 'react-dom/client'
 import { MyComponent } from './MyComponent.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <MyComponent />
+  <MyComponent txt='lo que sea' />
 )
 ```
+
+Por último se considera una muy mala práctica mutar las propiedades del componente (los valores que le pasamos) dentro del mismo, es decir, deberíamos evitar hacer algo como lo siguiente:
+
+```jsx
+export MyComponent ({ txt }) {
+  txt = `prefix-${txt}`
+  return (
+    <p>{txt}</p>
+  )
+}
+```
+
+La forma correcta de hacerlo sería creando una variable nueva
+
+```jsx
+export MyComponent ({ txt }) {
+  const prefixedTxt = `prefix-${txt}`
+  return (
+    <p>{prefixedTxt}</p>
+  )
+}
+```
+
+## Estilos en React
+
+En React podemos usar estilos de dos formas en nuestros componentes, la primera es con estilos en linea, donde al atributo "style" de nuestro componente le pasamos un objeto con los estilo:
+
+```jsx
+export MyComponent () {
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      width: '1rem',
+      overflow: 'hidden'
+    }}>
+      <button>
+        Click Me
+      </button>
+    </div>
+  )
+}
+```
+
+Esto es util si necesitamos darle estilos que por algún motivo no podamos hacerlo como CSS normal o en el caso de React Native que solo permite esta forma de dar estilos, pero en general es más común hacerlo en un archivo aparte:
+
+```css
+/* path: MyComponent.css */
+div {
+  display: flex,
+  align-items: center,
+  width: 1rem,
+  overflow: hidden
+}
+```
+
+```jsx
+// path: MyComponent.jsx
+import './MyComponent.css'
+
+export MyComponent () {
+  return (
+    <div>
+      <button>
+        Click Me
+      </button>
+    </div>
+  )
+}
+```
+
+Por convencion tanto el componente como sus estilos tienen el mismo nombre, esto para que sea más fácil identificar que están relacionados sin necesidad de ver el código del componente.
+
+### Clases de un Componente
+
+Al trabajar con JSX podríamos querer asignalre una clase a nuestro componente utilizando "class" de la siguiente forma
+
+```jsx
+export MyComponent () {
+  return (
+    <div class="myClass">
+      <button>
+        Click Me
+      </button>
+    </div>
+  )
+}
+```
+
+Sin embargo esto no funciona debido a que JSX es JavaScript y por ende "class" es una palabra reservada para definir clases, es por eso que en JSX en lugar de usar "class" usamos "className"
+
+```jsx
+export MyComponent () {
+  return (
+    <div className="myClass">
+      <button>
+        Click Me
+      </button>
+    </div>
+  )
+}
+```
+
+## Formas Particulares de pasar Propiedades a un Componentes
+
+### Booleanos y Callbacks
+
+Supongamos que tenemos el siguiente componente:
+
+```jsx
+// path: EmployeeCard.jsx
+export function EmployeeCard ({ name, isActive, callback }) {
+  let status
+
+  if (isActive) {
+    // No hay problema con hacer esto, una variable puede guardar un elemento
+    status = <span>Activo</span>
+  } else {
+    status = <span>Inactivo</span>
+    callback()
+  }
+
+  return (
+    <section>
+      <strong>{name}</strong>
+      {status}
+    </section>
+  )
+}
+```
+
+Cuando queramos pasar un valor booleano tenemos dos formas de hacerlo mientras que pasar un callback es bastante intuitivo:
+
+```jsx
+// path: App.jsx
+import { EmployeeCard } from './EmployeeCard.jsx'
+
+export function App () {
+  const employeesCallback = () => {console.log('Empleado inactivo')}
+
+  // "<>" es equivalente a "<React.Fragment>" pero nos ahorramos escribirlo
+  return (
+    <>
+      {/* Tenemos que evaluar "true" o "false" porque si no lo que hacemos es*/}
+      {/* pasarle el string 'true' o 'false'*/}
+      <EmployeeCard name="Juan" isActive={true} /> // <- esto podría fallar pq no hay callback
+
+      {/* El callback por otro lado simplemente evaluamos la función sin ejecutarla*/}
+      <EmployeeCard name="Pepe" isActive={false} callback={employeesCallback} />
+
+      {/* Por defecto si no le asignamos un valor al parametro pero lo escribimos*/}
+      {/* se le pasa el booleano "true", esto es muy parecido a ciertos atributos en HTML*/}
+      <EmployeeCard name="Paco" isActive callback={employeesCallback} />
+
+      {/* Cuando no especificamos un parametro su valor queda como undefined*/}
+      <EmployeeCard name="Carlos" callback={employeesCallback} />
+    </>
+  )
+}
+```
+
+### Propiedad Children
+
+Supongamos que tenemos el mismo componente que antes pero sin el callback ne "isActive":
+
+```jsx
+// path: EmployeeCard.jsx
+export function EmployeeCard ({ name }) {
+  return (
+    <section>
+      <strong>{name}</strong>
+    </section>
+  )
+}
+```
+
+Hasta ahora para pasarle el valor para poner dentro del elemento "strong" lo haciamos con la propiedad name, pero supongamos que a la hora de usar el componente queremos hacerlo de la siguiente manera:
+
+```jsx
+// path: App.jsx
+import { EmployeeCard } from './EmployeeCard.jsx'
+
+export function App () {
+  return (
+    <EmployeeCard>
+      Paco
+    </EmployeeCard>
+  )
+}
+```
+
+Si queremos poder recuperar el nombre de esa forma lo hacemos por medio de la propiedad "children" que poseen todos los componentes, dicha propiedad lo que hace es almacenar a **todos** los hijos del componente, sabiendo eso cambiamos el código de nuestro componente por el siguiente:
+
+```jsx
+// path: EmployeeCard.jsx
+export function EmployeeCard ({ children }) {
+  return (
+    <section>
+      <strong>{children}</strong>
+    </section>
+  )
+}
+```
+
+## Estado en React
+
+El estado hace referencia a las propiedades que almacena el propio componente y que pueden cambiar con el tiempo, un ejemplo muy sencillo es con un botón de seguir en una red social, su **estado** es lo que indica si el usuario ya sigue o no a una cuenta determinada y en función de esto cambia el aspecto del componente.
+
+Entender los estados en React es importante porque son lo que dotan de vida a los componentes y mucho más importante, es el encargado de definir cunado se vuelve a renderizar un componente, esto se debe a que React **reacciona** al cambio de estado y rerenderiza el componente al momento (de ahí viene el nombre "React").
+
+Otra cosa a tener en cuenta es que React modifica lleva al DOM únicamente aquello que cambia con respecto a cómo estaba antes, es decir, si tenemos una card con un h1, un span y un párrafo y el cambio de estado sólo afecta al span, solo se modifica en el DOM el span, y no toda la card.
+
+## Propagación de Rerenderizado
+
+Como vimos recién, cuando el estado de un componente cambia este tienen que volver a renderizarse, cuando esto ocurre, no solo se renderiza el componente en sí si no también todos sus hijos, es decir, que si rerenderizamos nuestro componente principal "App" se rerenderizan todo el resto de componentes.
+
+Pero aquí hay un pequeño matiz, cuando decimos que se renderiza nos referimos a que se ejecutar su código, no necesariamente que se destruya y vuelva a crear toda esa parte del DOM. Esto ocurre gracias al Virtual DOM de React que es un paso intermedio entre que se ejecuta el código y que se modifique el DOM que ve el usuario.
+
+React lo que hacer al renderizar nuestros componentes es modifica el Virtual DOM y después compararlo con el DOM normal, para acto seguido solo modificar aquellas partes del DOM que realmente hayan cambiado, esto se hace para evitar destruir inecesariamente el DOM y consumir muchos recursos.
+
+Es importante comprender esto porque aunque nosotros veamos que no se vuelven a crear ciertos elementos no quiere decir que su código no haya sido ejecutado, y en definitiva, consumido recursos, por más que React no lleve esos cambios al DOM y ahorre algo de recursos de esa forma aún así podemos llegar a tener problemas de rendimiento si no tenemos algo de cuidado.
+
+## React Hooks 🪝
+
+Los hooks son utilidades de React que permiten añadir funcionalidad a los componentes de React, ejecutar código cuando ocurra algo concreto al componente o mejorar el rendimiento del mismo. Son en esencia lo que hace funcional a React
+
+### useState
+
+**useState** es probablemente el hook más básico e importante de React, este permite almacenar una variable dentro del estado del componente y actualizarla a conveniencia.
+
+Para usarlo debemos importar useState desde React
+
+```jsx
+import { useState } from 'react'
+```
+
+Al llamar a useState debemos pasarle el valor inicial de nuestro estado, en el ejmplo del botón de seguir lo más lógico es que sea "false". Esto lo que hace es devolver un array de dos elementos, el primero es el valor del estado y el segundo la función para actualizarlo:
+
+```jsx
+import { useState } from 'react'
+
+export function FollowButton ({ name }) {
+  const state = useState(false) // <-- Array
+  const isFollowing = state[0] // <-- Valor del estado
+  const setIsFollowing = state[1] // por convención la función para actualizarlo se llama "set" seguido del nombre del estado 
+
+  const text = isFollowing ? 'Unfollow' : 'Follow'
+  const btnClases = isFollowing ? 'follow-btn is-following' : 'follow-btn'
+
+  return (
+    <div>
+      <strong>{name}</strong>
+      <button className={btnClases}>
+        {text}
+      </button>
+    </div>
+  )
+}
+```
+
+Notese que las tres lineas para crear el estado pueden resumirse a una sola de la siguiente manera:
+
+```jsx
+const [isFollowing, setIsFollowing] = useState(false)
+```
+
+Para hacer que el botón funcione vamos a utilizara el atributo "onClick" ya que como hemos visto React es bastante más declarativo que JS normal y como valor debemos pasarle una función a ejecutar. En nuestro ejemplo esta función lo que hará es llamar a "setIsFollowing" con el argumento "!isFollowing", esto para alternar entre seguir y no.
+
+```jsx
+import { useState } from 'react'
+
+export function FollowButton ({ name }) {
+  const [isFollowing, setIsFollowing] = useState(false)
+
+  const text = isFollowing ? 'Unfollow' : 'Follow'
+  const btnClases = isFollowing ? 'follow-btn is-following' : 'follow-btn'
+
+  const handleClick = () => {
+    setIsFollowing(!isFollowing)
+  }
+
+  return (
+    <div>
+      <strong>{name}</strong>
+      <button className={btnClases} onClick={handleClick}>
+        {text}
+      </button>
+    </div>
+  )
+}
+```
+
+Si vamos al [segundo proyecto de ejemplo](./3.example-projects/01-twitter-ui-component/) podemos ver esto y que por el cambio de estado del componente sin hacer nada en particular al hacer click en el botón el componente se rerenderiza automáticamente.
+
+Es importante una cosa, el estado del componente **solo se inicializa una vez**, cuando este es creado, esto implica que si el estado inicial depende de una propiedad no importa cuantas veces se rerenderice que componente porque su padre lo hizo, su estado no se modifica.

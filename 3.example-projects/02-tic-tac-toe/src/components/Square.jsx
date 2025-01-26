@@ -1,4 +1,4 @@
-export function Square ({children, isSelected, updateBoard, index}) {
+export function Square ({ children, isSelected, updateBoard, index }) {
   const handleClick = () => {
     updateBoard(index)
   }

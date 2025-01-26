@@ -18,12 +18,12 @@ const users = [
   }
 ]
 
-export default function App() {
+export default function App () {
   return (
     <section className='App'>
       {
         users.map(u => {
-          const {userName, name, initialIsFollowing} = u
+          const { userName, name, initialIsFollowing } = u
 
           // Cuando renderizamos de forma dinámica, por ejemplo desde un array como aquí, debemos pasarle a React una clave (key) con la que identificar al componente de forma única. Lo ideal sería hacerlo por una ID de la BBDD pero el userName nos sirve porque, en teoría, es único.
           return (

@@ -1,17 +1,17 @@
 import { useState } from 'react'
-import confetti from 'canvas-confetti';
+import confetti from 'canvas-confetti'
 
 import './App.css'
 
-import { TURNS } from "./constants";
-import { checkWinnerFrom, checkEndGameFrom } from './logic/board';
-import { saveGameStorage, resetGameStorage } from './logic/storage';
+import { TURNS } from './constants'
+import { checkWinnerFrom, checkEndGameFrom } from './logic/board'
+import { saveGameStorage, resetGameStorage } from './logic/storage'
 
-import { Square } from './components/Square';
+import { Square } from './components/Square'
 import { GameBoard } from './components/GameBoard'
 import { WinnerModal } from './components/WinnerModal'
 
-export default function App() {
+export default function App () {
   const [board, setBoard] = useState(() => {
     const boardFromStorage = window.localStorage.getItem('board')
     return boardFromStorage ? JSON.parse(boardFromStorage) : Array(9).fill(null)
@@ -47,8 +47,7 @@ export default function App() {
     if (newWinner) {
       confetti()
       setWinner(newWinner)
-    }
-    else if (checkEndGameFrom(newBoard)) {
+    } else if (checkEndGameFrom(newBoard)) {
       setWinner(false)
     }
   }
@@ -66,7 +65,7 @@ export default function App() {
       <h1>Tic Tac Toe</h1>
       <button onClick={resetGame}>Reset Game</button>
 
-      <GameBoard  board={board} updateBoard={updateBoard} />
+      <GameBoard board={board} updateBoard={updateBoard} />
 
       <section className='turn'>
         <Square isSelected={turn === TURNS.X}>
@@ -77,7 +76,7 @@ export default function App() {
         </Square>
       </section>
 
-      <WinnerModal winner={winner} resetGame={resetGame}/>
+      <WinnerModal winner={winner} resetGame={resetGame} />
     </main>
   )
 }

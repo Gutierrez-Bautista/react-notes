@@ -496,6 +496,26 @@ export function EmployeeCard ({ children }) {
 }
 ```
 
+## React.StrictMode
+
+Al crear un proyecto con Vite en nuesro main.jsx veremos el siguiente código:
+
+```jsx
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import './index.css'
+import App from './App.jsx'
+
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <App />
+  </StrictMode>
+)
+```
+
+"StrictMode" lo que hace es ofrecer ayudas en desarrollo (ver si usamos código obsoleto de React, y ejecutar código de forma auxiliar para ayudar a detectar errores).
+"StrictMode" no debe llegar a producción, ya que implica ejecuciones inecesarias de código en el cliente.
+
 ## Estado en React
 
 El estado hace referencia a las propiedades que almacena el propio componente y que pueden cambiar con el tiempo, un ejemplo muy sencillo es con un botón de seguir en una red social, su **estado** es lo que indica si el usuario ya sigue o no a una cuenta determinada y en función de esto cambia el aspecto del componente.
@@ -519,6 +539,8 @@ Es importante comprender esto porque aunque nosotros veamos que no se vuelven a 
 ## React Hooks
 
 Los hooks son utilidades de React que permiten añadir funcionalidad a los componentes de React, ejecutar código cuando ocurra algo concreto al componente o mejorar el rendimiento del mismo. Son en esencia lo que hace funcional a React
+
+## Hooks Básicos
 
 ### useState
 
@@ -618,3 +640,127 @@ export function Dice ({ name }) {
 }
 ```
 
+### useEffect
+
+El useEffect nos permite ejecutar código arbitrario cuando el componente se inicializa en el DOM y cada vez que sus dependencias cambien (ahora veremos que es una dependencia).
+
+Al igual que useState debemos ubicar los useEffect en el cuerpo del componente he importarlo desde React.
+
+```jsx
+import { useState, useEffect } from 'react'
+
+export function Component () {
+  const [value, setValue] = useState(false)
+  const [anotherValue, setAnotherValue] = useState(true)
+
+  /*
+  useEffect no devuelve nada por lo que no necesitamos guardarlo.
+
+  El contrato del useEffect es el siguiente:
+
+  useEffect(codeToExecute, ?dependenciesArray)
+
+  La función de las dependencias es decir cuándo debe ejecutarse el código del efecto, este se ejecuta cada vez que una de sus dependencias cambia de valor:
+  */
+  useEffect(() => {
+    console.log('... doing somthing')
+  }) // <-- si omitimos el segundo argumento el código se ejecuta cada vez que se renderiza el componente
+
+  useEffect(() => {
+    console.log('... doing somthing')
+  }, []) // <-- el código se ejecuta solo cuando se inicializa el componente
+
+  useEffect(() => {
+    console.log('... doing somthing')
+  }, [value]) // <-- el código se ejecuta cada vez que "value" cambia
+
+  useEffect(() => {
+    console.log('... doing somthing')
+  }, [value, anotherValue]) // <-- el código se ejecuta cada vez que "value" o "anotherValue" cambian
+}
+```
+
+un ejemplo es si queremos hacer un componente que siga el mouse de usuario, este se vería algo así:
+
+```jsx
+import { useState, useEffect } from 'react'
+
+function App() {
+  const [enabled, setEnabled] = useState(false)
+  const [position, setPosition] = useState({ x: 0, y: 0 })
+
+  // Creamos el efecto
+  useEffect(() => {
+    const handleMove = (evt) => {
+      const {clientX, clientY} = evt
+      setPosition({x: clientX, y: clientY})
+    }
+
+    if (enabled) {
+      window.addEventListener('pointermove', handleMove)
+    }
+  }, [enabled]) // <-- decimos que se ejecute cuando "enabled" cambie de valor
+
+  return (
+    <>
+      <main>
+      <div style={{
+        position: 'absolute',
+        backgroundColor: '#09f',
+        borderRadius: '50%',
+        opacity: '0.8',
+        pointerEvents: 'none',
+        left: -20,
+        top: -20,
+        width: 40,
+        height: 40,
+        transform: `translate(${position.x}px, ${position.y}px)`
+      }}
+      />
+      <button onClick={ () => { setEnabled(!enabled) } }>
+        {enabled ? 'Disable' : 'Enable'} cursor follower
+      </button>
+      </main>
+    </>
+  )
+}
+
+export default App
+```
+
+Pero acá tenemos un problema, cuando nosotros intentamos deshabilitar el cursor follower no funciona, esto es porque nunca quitamos el evento a la ventana, pero hay otra cosa más importante que está ocurriendo. Si nosotros le damos 3 veces al botón (habilitar, deshabilitar, habilitar) vamos a suscribirnos dos veces al evento, esto es obviamente muy malo para el rendimiento, es aquí donde entra el concepto de limpiar el efecto.
+
+Limpiar el efecto hace referencia al proceso que se hace antes de que se vuelve a ejecutar el mismo o cuando el componente se desmonta (se quita del DOM real) para asegurarnos que no tenemos suscripciones inecesarias ni ninguna otra cosa que pueda afectar el rendimiento.
+
+Para decirle a React qué hacer cuando debe limpiar el efecto lo único que debemos es hacer que el useEffect devuelva una función que se encargue de ese trabajo. Con esto React lo que hace es llamar a esa función cada vez que toca limpiar el efecto
+
+```jsx
+import { useState, useEffect } from 'react'
+
+function App() {
+  // ...
+
+  useEffect(() => {
+    const handleMove = (evt) => {
+      const {clientX, clientY} = evt
+      setPosition({x: clientX, y: clientY})
+    }
+
+    if (enabled) {
+      window.addEventListener('pointermove', handleMove)
+    }
+
+    // clean up ("limpiador"):
+    // --> cuando el componente se desmonta
+    // --> cuando cambian las dependencias, antes de ejecutar el efecto
+    return () => {
+      window.removeEventListener('pointermove', handleMove)
+    }
+  }, [enabled]) //
+  // ...
+}
+
+export default App
+```
+
+Algo que podemos notar es que si no hemos quitado el StrictMode nada más se inicia la aplicación el efecto se ejecuta, limpia y vuelve a ejecutar. El StrictMode lo hace para ayudar al debug del efecto.

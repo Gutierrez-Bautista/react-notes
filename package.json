@@ -1,0 +1,31 @@
+{
+  "name": "react-notes",
+  "version": "1.0.0",
+  "description": "React es una de las librearias de JavaScript (JS de ahora en más) diseñada para hacer interfaces de usuario y la más utilizada y solicitada en cuanto a desarrollo frontend (seguido de Angular y Vue).",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "standard --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Gutierrez-Bautista/react-notes.git"
+  },
+  "keywords": [
+    "react",
+    "reactjs",
+    "notes"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Gutierrez-Bautista/react-notes/issues"
+  },
+  "homepage": "https://github.com/Gutierrez-Bautista/react-notes#readme",
+  "devDependencies": {
+    "standard": "^17.1.2"
+  },
+  "eslintConfig": {
+    "extends": "./node_modules/standard/eslintrc.json"
+  }
+}

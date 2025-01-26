@@ -1,6 +1,6 @@
-import { Square } from "./Square"
+import { Square } from './Square'
 
-export function GameBoard ({board, updateBoard}) {
+export function GameBoard ({ board, updateBoard }) {
   return (
     <section className='game'>
       {

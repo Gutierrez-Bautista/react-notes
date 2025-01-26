@@ -1,12 +1,12 @@
-# React ⚛️
+# Apuntes de React ⚛️
 
-## ¿Qué es React? ⚛️
+## ¿Qué es React?
 
 React es una de las librearias de JavaScript (JS de ahora en más) diseñada para hacer interfaces de usuario y la más utilizada y solicitada en cuanto a desarrollo frontend (seguido de Angular y Vue).
 
 React surge en 2011 como una forma de simplificar las interfaces de usuario por parte de Meta que desde 2013 es completamente de código abierto y posee una licencia que permite usarlo para proyectos comerciales no realacionados con Meta. Con React tenemos la posibilidad de tener una misma aplicación en cliente y servidor lo que reduce el código
 
-## ¿Por Qué Aprender React? 🤔
+## ¿Por Qué Aprender React?
 
 Además de ser muy utilizado React tiene las siguientes ventajas:
 - Permite crear aplicaciones moviles y de escritorio por medio de React Native y React for MacOS y Windows.
@@ -14,13 +14,13 @@ Además de ser muy utilizado React tiene las siguientes ventajas:
 - Ayuda a aprender otras librerias/frameworks: al estar basado en componentes muchos conceptos de React pueden ser llevados a Angular, Vue, Svelt y otras librerias y frameworks de JS.
 - Estabilidad de la API: A diferencia de otros frameworks como Angular o Vue que a lo largo del tiempo han tenido problemas con los cambios de versiones (paso de Vue 2.x a 3.x o Angular 16 a 17) con React esto no ha ocurrido ya que la sintaxis se ha mantenido o se implementaron formas de cambiarla de forma automatica.
 
-## Recurso ⭐
+## Recurso
 
 - [Pagina oficial](https://es.react.dev/)
 - [Documentación de React](https://es.react.dev/reference/react)
 - [Wiki de la comunidad con preguntas frecuentes](https://www.reactjs.wiki/)
 
-## Ejemplo Donde Conviene Usar React 🛠️
+## Ejemplo Donde Conviene Usar React
 
 Supongamos que tenemos el siguiente HTML y JS (código en [esta](./1.ejemplo-donde-serviria-react/) carpeta).
 
@@ -76,7 +76,7 @@ btns.forEach(btn => {
 
 Es fácil ver que si tenemos que implementar la funcionalidad de me gusta en una parte muy separada de nuestra aplicación esto puede complicarse mucho, es por eso que es conveniente usar componentes, en nuestro caso, de React.
 
-## Bases de React 🏛️
+## Bases de React
 
 React es en su nivel más bajo no dista mucho de lo que vimos, nos permite crear elementos de forma más rápida (agrgando complejidad) pero no es declarativo, si no que tenemos que especificar muy paso por paso lo que debe hacer. Esto podemos verlo en el JS del directorio ["react-en-cliente"](./2.react-en-cliente/)
 
@@ -108,7 +108,7 @@ Esto es nuevamente muy engorroso y es por eso que se creó la extensión de arch
 
 Es básicamente lo que acabamos de hacer, es el archivo encargado de renderizar nuestra aplicación cuando se ejecuta.
 
-## JSX ⚛️
+## JSX
 
 JSX está basado en XML y permite escribir lo mismo que vimos antes pero de una forma mucho más comprensible, como si escribieramos código HTML
 
@@ -134,7 +134,7 @@ const userName = 'Paco'
 <p>número: {Math.random()}</p>
 ```
 
-## Vite Como Empaquetador⚡
+## Vite Como Empaquetador
 
 Vite es un empaquetador de aplicaciones que nos permitirá trabajar con JSX de una forma mucho más sencilla, para ello debemos instalarlo como se ve en la [web oficial](https://vite.dev/) (con el comando `npm create vite@latest`) dentro de la carpeta en la que vamos a guardar el proyecto (por lo general simplemente ejecutamos).
 
@@ -150,7 +150,7 @@ Posteriormente vamos al proyecto con `cd nombre-del-proyecto` y ejecutamos prime
 
 Con esto ya tenemos nuestro proyecto base con el cual empezar a trabajar, si ejecutamos el comando `npm run dev` nos mostrara el proyecto base que crea Vite, que no es más que algunos componentes de React y algo de interactividad.
 
-## Proyecto Básico de React Creado con Vite
+### Proyecto Básico de React Creado con Vite
 
 Si vamos a un proyecto recién creado con Vite nos vamos a encontrar con una serie de archivos y carpetas, algunos de ellos deberiamos ya conocerlos como el package.json, el .gitignore o el README.md pero hay otros nuevos que vamos a explicar a continuación:
 
@@ -265,7 +265,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 
 Otra cosa a nivel conceptual es que a los parametros que le pasamos a los compoenentes se les suele llamar **propiedades** del componente 
 
-Este codigo se encuentra en el primer proyecto de ejemplo en [este](./3.example-projects/00-first-component/src/main.jsx) archivo
+Este codigo se encuentra en el [proyecto de ejemplo 00](./3.example-projects/00-first-component/) en [este](./3.example-projects/00-first-component/src/main.jsx) archivo
 
 Notese que el nombre del componente está en PascalCase, esto es necesario porque no sabemos los elementos que se agregarán a HTML en un futuro y debemos tenerlo en cuenta porque si intentamos llamar a nuestro componente como "button" cuando intentemos usarlo React interpretará que queremos usar el botón de HTML y no el nuestro, al usar PascalCase evitamos estas colisiones y la posibilidad de que ocurran en un futuro.
 
@@ -504,6 +504,8 @@ Entender los estados en React es importante porque son lo que dotan de vida a lo
 
 Otra cosa a tener en cuenta es que React modifica lleva al DOM únicamente aquello que cambia con respecto a cómo estaba antes, es decir, si tenemos una card con un h1, un span y un párrafo y el cambio de estado sólo afecta al span, solo se modifica en el DOM el span, y no toda la card.
 
+Por último es importante saber que la actualización de los estados es asíncrona.
+
 ## Propagación de Rerenderizado
 
 Como vimos recién, cuando el estado de un componente cambia este tienen que volver a renderizarse, cuando esto ocurre, no solo se renderiza el componente en sí si no también todos sus hijos, es decir, que si rerenderizamos nuestro componente principal "App" se rerenderizan todo el resto de componentes.
@@ -514,7 +516,7 @@ React lo que hacer al renderizar nuestros componentes es modifica el Virtual DOM
 
 Es importante comprender esto porque aunque nosotros veamos que no se vuelven a crear ciertos elementos no quiere decir que su código no haya sido ejecutado, y en definitiva, consumido recursos, por más que React no lleve esos cambios al DOM y ahorre algo de recursos de esa forma aún así podemos llegar a tener problemas de rendimiento si no tenemos algo de cuidado.
 
-## React Hooks 🪝
+## React Hooks
 
 Los hooks son utilidades de React que permiten añadir funcionalidad a los componentes de React, ejecutar código cuando ocurra algo concreto al componente o mejorar el rendimiento del mismo. Son en esencia lo que hace funcional a React
 
@@ -584,6 +586,35 @@ export function FollowButton ({ name }) {
 }
 ```
 
-Si vamos al [segundo proyecto de ejemplo](./3.example-projects/01-twitter-ui-component/) podemos ver esto y que por el cambio de estado del componente sin hacer nada en particular al hacer click en el botón el componente se rerenderiza automáticamente.
+Si vamos al [proyecto de ejemplo 01](./3.example-projects/01-twitter-ui-component/) podemos ver esto y que por el cambio de estado del componente sin hacer nada en particular al hacer click en el botón el componente se rerenderiza automáticamente.
 
 Es importante una cosa, el estado del componente **solo se inicializa una vez**, cuando este es creado, esto implica que si el estado inicial depende de una propiedad no importa cuantas veces se rerenderice que componente porque su padre lo hizo, su estado no se modifica.
+
+Para ver otro proyecto de React algo más complejo, pero aún así básico, que use lo visto hasta ahora también se puede ir al [proyecto de ejemplo 02](./3.example-projects/02-tic-tac-toe/)
+
+Es importante aclarar que cualquier inicialización del estado de un componente debe estar en el cuerpo del mismo y está mal ponerlos dentro de un condicional, bucle o lo que sea, esto es porque React guarda el orden en el que se ejecutaron y si en algún momento este no se respeta va a fallar.
+
+useState admite no sólo un tipo de dato como argumento, también podemos pasarle una función para que el valor inicial del estado sea aquello que devuelva la función y de la misma forma la función para acutalizar el estado también admite otra función como argumento, por ejemplo:
+
+```jsx
+import { useState } from 'react'
+
+export function Dice ({ name }) {
+  const [number, setNumber] = useState(() => {
+    return Math.floor(Math.random() * 6) + 1
+  })
+
+  const handleClick = () => {
+    setIsFollowing(() => {
+      return Math.floor(Math.random() * 6) + 1
+    })
+  }
+
+  return (
+    <span onClick={handleClick}>
+      {number}
+    </span>
+  )
+}
+```
+

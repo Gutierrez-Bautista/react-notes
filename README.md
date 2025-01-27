@@ -764,3 +764,34 @@ export default App
 ```
 
 Algo que podemos notar es que si no hemos quitado el StrictMode nada más se inicia la aplicación el efecto se ejecuta, limpia y vuelve a ejecutar. El StrictMode lo hace para ayudar al debug del efecto.
+
+#### Fetching de Datos usando useEffect
+
+Cuando queremos hacer un fetching de datos en React no podemos hacerlo directamente en el cuerpo de nuestro componente, esto porque se haría cada vez que se renderice el componente, lo que no es muy bueno.
+
+Es ahí donde entra el useEffect como la forma más básica de hacer fetching de datos, vamos a ver un ejemplo con la PokeAPI
+
+```jsx
+import { useState, useEffect } from 'react'
+
+function PokemonCard ({ pokemonName }) {
+  const [imgUrl, setImgUrl] = useState()
+
+  useEffect(() => {
+    fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`)
+      .then(res => res.json())
+      .then(data => {
+        setImgUrl(data.sprites.front_default)
+      })
+  }, []) // <-- haremos el fetch una sola vez cuando el componente se inicializa
+
+  return (
+    <div>
+      <h3>{pokemonName}</h3>
+      {imgUrl && <img src={imgUrl} />} {/* <-- se renderiza la imagen si ya tenemos su URL */}
+    </div>
+  )
+}
+```
+
+Nosotros no queremos que se haga la petición cada vez que el componente se renderiza, necesitamos que se haga cuando el componente se renderiza por primera vez (se inicializa), es por eso que usamos el useEffect

@@ -23,3 +23,7 @@ La segunda devuelve una imagen y debemos usar la siguiente estructura: "https://
 
 > [!NOTE]  
 > Ahora sí A TRABAJAR
+
+## Una vez Terminamos
+
+Es probable que al terminar la prueba que nos dieron nos soliciten crear un botón que traiga un nuevo hecho y actualice tanto el texto como la imagen o que nos pregunten qué hariamos a continuación, en este último caso son buenas opciones el manejo de errores, separar componentes y lógica en caso de que se pueda o implementar custom hooks

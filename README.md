@@ -765,6 +765,8 @@ export default App
 
 Algo que podemos notar es que si no hemos quitado el StrictMode nada más se inicia la aplicación el efecto se ejecuta, limpia y vuelve a ejecutar. El StrictMode lo hace para ayudar al debug del efecto.
 
+Para ver todo este código revisar el [tercer poryecto de ejemplo](3.example-projects/03-mouse-follower/)
+
 #### Fetching de Datos usando useEffect
 
 Cuando queremos hacer un fetching de datos en React no podemos hacerlo directamente en el cuerpo de nuestro componente, esto porque se haría cada vez que se renderice el componente, lo que no es muy bueno.
@@ -774,24 +776,83 @@ Es ahí donde entra el useEffect como la forma más básica de hacer fetching de
 ```jsx
 import { useState, useEffect } from 'react'
 
-function PokemonCard ({ pokemonName }) {
+function PokemonCard ({ pokemonId }) {
+  const [pokemonName, setPokemonName] = useState()
   const [imgUrl, setImgUrl] = useState()
+  const [pokemonTypes, setPokemonTypes] = useState([])
 
   useEffect(() => {
-    fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`)
+    fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonId}`)
       .then(res => res.json())
       .then(data => {
+        setPokemonName(data.name)
         setImgUrl(data.sprites.front_default)
+        setPokemonTypes(data.types)
       })
-  }, []) // <-- haremos el fetch una sola vez cuando el componente se inicializa
+  }, []) // <-- haremos el fetch cada vez que el ID del pokemon cambie
 
   return (
     <div>
-      <h3>{pokemonName}</h3>
-      {imgUrl && <img src={imgUrl} />} {/* <-- se renderiza la imagen si ya tenemos su URL */}
+      {pokemonName && <h3>{pokemonId}: {pokemonName}</h3>}
+      {imgUrl && <img src={imgUrl} />}
+      {pokemonTypes && pokemonTypes.map((typeInfo) => {
+        return <span key={typeInfo.slot}>{typeInfo.type.name}</span>
+      })}
     </div>
   )
 }
 ```
 
-Nosotros no queremos que se haga la petición cada vez que el componente se renderiza, necesitamos que se haga cuando el componente se renderiza por primera vez (se inicializa), es por eso que usamos el useEffect
+Nosotros no queremos que se haga la petición cada vez que el componente se renderiza, necesitamos que se haga cuando el componente se renderiza por primera vez (se inicializa), es por eso que usamos el useEffect.
+
+Este código se encuentra en el [cuarto proyecto de ejemplo](3.example-projects/04-code-interview/)
+
+## Custom Hooks
+
+Los custom hooks son una forma que otroga React para extraer la lógica de los componentes que use hooks de React para poder reutilizarla. Usemos el ejemplo de la PokemonCard que vimos antes, podría ser interesante extraer la lógicadel fetch de datos para que el componente quedase más limpio, para ello debemos hacer lo siguiente:
+
+1. Crear una función cuyo nombre empiece con "use": Esta función será nuestro custom hook. El nombre debe empezar con "use" porque es la forma que tenemos para decirle a React que estamos creando un hook y por ende que podemos usar hooks de React dentro.
+2. Pasar toda la lógica que queramos a nuestro custom hook.
+
+Haciendo esto nuestro código quedaría así:
+
+```jsx
+import { useState, useEffect } from 'react'
+
+// Nuestro custom hook
+const usePokemon = ({ pokemonId }) => {
+  // los estados están dentro del custom hook porque solo los necesitamos aquí
+  const [pokemonName, setPokemonName] = useState()
+  const [imgUrl, setImgUrl] = useState()
+  const [pokemonTypes, setPokemonTypes] = useState([])
+
+  useEffect(() => {
+    fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonId}`)
+      .then(res => res.json())
+      .then(data => {
+        setPokemonName(data.name)
+        setImgUrl(data.sprites.front_default)
+        setPokemonTypes(data.types)
+      })
+  }, [])
+
+  return { pokemonName, imgUrl, pokemonTypes } // <- devolvemos los valores que nos interesan
+}
+
+export function PokemonCard ({ pokemonId }) {
+  // usamos el custom hook
+  const { pokemonName, imgUrl, pokemonTypes } = usePokemon({ pokemonId })
+
+  return (
+    <div>
+      {pokemonName && <h3>{pokemonId}: {pokemonName}</h3>}
+      {imgUrl && <img src={imgUrl} />}
+      {pokemonTypes && pokemonTypes.map((typeInfo) => {
+        return <span key={typeInfo.slot}>{typeInfo.type.name}</span>
+      })}
+    </div>
+  )
+}
+```
+
+Una vez hecho esto podríamos pasar nuestro custom hook a un directorio llamado "hooks" para así poder reutilizarlo más adelante (ver [5 proyecto de ejemplo](3.example-projects/05.pokemon-card/))

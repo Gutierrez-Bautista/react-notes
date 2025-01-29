@@ -1,0 +1,72 @@
+*,
+*::after,
+*::before {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+h3, span {
+  text-transform: capitalize;
+}
+
+main {
+  background-color: #111;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2.4rem;
+
+  padding: .8rem;
+  background-color: rgba(255, 230, 230, 0.802);
+  border-radius: 8px;
+}
+
+.card .info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.card .info img {
+  width: 12rem;
+}
+
+.card .info .types-container {
+  display: flex;
+  justify-content: center;
+  gap: 1.2rem;
+}
+
+.card .info .types-container span {
+  cursor: default;
+  border: 1px solid #111;
+  border-radius: 1000px;
+  padding: .2rem .6rem;
+}
+
+.card button {
+  cursor: pointer;
+  padding: .4rem;
+  background-color: rgb(252, 122, 122);
+  border: none;
+  border-radius: 1000px;
+
+  transition: all .2s ease;
+
+  &:hover {
+    background-color: rgb(161, 50, 50);
+    transform: scale(1.1);
+  }
+}

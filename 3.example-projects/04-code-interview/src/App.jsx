@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 
-import { CATS_FACTS_ENDPOINT, CAT_PREFIX_IMAGE_URL } from './constants'
+import { CAT_PREFIX_IMAGE_URL } from './constants'
+import { getRandomFact } from './services/fact'
 
 export function App () {
   const [fact, setFact] = useState()
@@ -9,12 +10,7 @@ export function App () {
 
   // recuperar hecho
   useEffect(() => {
-    fetch(CATS_FACTS_ENDPOINT)
-      .then(res => res.json())
-      .then(data => {
-        const { fact } = data
-        setFact(fact)
-      })
+    getRandomFact().then(newFact => setFact(newFact))
   }, []) // <-- no olvidar las dependencias ("[]")
 
   // para recuperar la imagen cuando tenemos una cita
@@ -26,9 +22,16 @@ export function App () {
     setImgWords(firstWord)
   }, [fact])
 
+  const handleClick = () => {
+    getRandomFact().then(newFact => setFact(newFact))
+  }
+
   return (
     <main>
       <h1>App de Gatitos</h1>
+      <button onClick={handleClick}>
+        Get New Fact
+      </button>
       {fact && <p>{fact}</p>}
       {imgWords && <img src={`${CAT_PREFIX_IMAGE_URL}${imgWords}`} alt='Image extracted using the first word of fact' />}
     </main>

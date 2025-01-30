@@ -856,3 +856,232 @@ export function PokemonCard ({ pokemonId }) {
 ```
 
 Una vez hecho esto podríamos pasar nuestro custom hook a un directorio llamado "hooks" para así poder reutilizarlo más adelante (ver [5 proyecto de ejemplo](3.example-projects/05.pokemon-card/))
+
+## Más Hooks de React
+
+### useRef
+
+Permite crear una referencia **mutable** que perciste durante todo el ciclo de vida del componente, es util para guardar valores como contadores, elementos del DOM o lo que sea pero que cada vez que cambie su valor el componente no se vuelva a renderizar. Veamos un ejemplo:
+
+```jsx
+import { useState, useEffect, useRef } from 'react'
+
+export function App () {
+  const [state, setState] = useState(true)
+  // useRef devuelve un objeto con la propiedad current que almacena su valor 
+  const refInput = useRef()
+  const formSubmitTimes = useRef(0) // <-- valor inicial 
+  
+  const handleSubmit = (evt) => {
+    evt.preventDefault()
+    const input = refInput.current // <-- el atributo current de la referencia guarda el valor
+    const value = input.value
+
+    if (value === '') return
+
+    formSubmitTimes.current++ // <-- la referencia es mutable, a diferencia de useState
+
+    // El componente no se vuelve a renderizar, el Efecto no se ejecuta
+  }
+
+  const handleClick = () => {
+    setState(!state) // <-- El componente vuelve a renderizarse
+  }
+
+  useEffect(() => {
+    console.log('rendering')
+  })
+
+  return (
+    <div>
+      <h1>My App</h1>
+      <form onSubmit={handleSubmit}>
+        {/* el atributo "ref" lo usamos cuando queremos guardar el elemento en una referencia */}
+        <input ref={refInput}></input>
+        <button type="submit">Send</button>
+      </form>
+      <p>Form submited {formSubmitTimes} times</p>
+      <button onClick={handleClick}>Rerender</button>
+    </div>
+  )
+}
+```
+
+Con el código de arriba el páraffo con las vece que se envió el formulario sólo cambia cunado le damos al botón "Rerender" y no cuando enviamos el formulario en sí. Esto pasa porque al enviar el formulario actualizamos el valor de una referencia, pero el estado del componente no cambia, y por lo tanto no se renderiza.
+
+### useMemo
+
+Este hook nos permite memoizar el resultado de una operación para evitar que se haga a menos que cambie el valor de una de sus dependencias, en cuanto a su sintaxis es igual al useEffect pero su diferencia es conceptual, useEffect ejecuta un efecto cuando el componente se inicializa o cuando sus dependencias cambian mientras que useMemo sirve para recalcular un valor solo cuando sus dependencias cambian. Veamos un ejemplo con un ToDo app:
+
+```jsx
+// path: ./hooks/useTask.js
+import { useState, useRef, useMemo } from 'react'
+import { searchTasks, addTask } from '../services/tasks'
+
+export function useTasks ({ sortByTaskTitle, search }) {
+  const [tasks, setTasks] = useState([])
+  const previousSearch = useRef() // <-- Para evitar hacer la misma busqueda dos veces seguidas
+
+  const getTasks = async ({ search }) => {
+    if (search === previousSearch.current) return
+
+    try {
+      previousSearch.current = search
+
+      const newTasks = await searchTasks() // <-- recupera las tareas (para el ejemplo no importa el cómo)
+
+      setTasks(newTasks)
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  const setNewTask = ({ taskInfo }) => {
+    // proceso para agreagar una tarea
+  }
+
+  const sortedTasks = useMemo(() => {
+    return sortByTaskName
+      ? [...tasks].sort((a, b) => a.title.localeCompare(b.title))
+      : [...tasks].sort((a, b) => {
+        if (a.date !== b.date) return a.date - b.date
+        return a.hour - b.hour
+      })
+  }, [sortByTaskTitle, tasks]) // <-- solo hacemos el calculo de ordenamiento si "sortByTaskTitle" o "tasks" cambian de valor, caso contrario devuelve el valor que calculó la vez anterior.
+
+  return { tasks: sortedTasks, getTasks, setNewTask }
+}
+```
+
+```jsx
+// path: ./App.jsx
+import { useState } from 'react'
+import { useTasks } from './hooks/useTask'
+import { useSearch } from './hooks/useSearch'
+import { Tasks } from './components/Task'
+
+export default function App () {
+  // sortByTaskTitle, search
+  const [sortByTaskTitle, setSortByTaskTitle] = useState(false)
+  const [search, updateSearch, error] = useSearch() // <-- para hacer validaciones
+  const { tasks, getTasks, setNewTask } = useTasks({ sortByTaskTitle, search })
+
+  const handleAddSubmit = (evt) => {
+    evt.preventDefault()
+
+    const taskInfo = Object.fromEntries(new FormData(evt.target))
+
+    setNewTask({ taskInfo })
+  }
+
+  const handleSearchSubmit = (evt) => {
+    evt.preventDefault()
+    getTasks({ search })
+  }
+
+  const handleChange = () => {
+    const newQuery = evt.target.value
+
+    updateSearch(newQuery)
+  }
+
+  const handleSort = () => {setSortByTaskTitle(!sortByTaskTitle)}
+
+  return (
+    <header>
+      <form onSubmit={handleSearchSubmit}>
+        <input type="text" placeholder="Text to search..." value={search} onChange={handleChange}>
+        <input type="checkbox" onChange={handleSort} checked={sortByTaskTitle}>
+        <button type="submit">Search</button>
+      </form>
+      {error && <p style={{color: 'red'}}>{error}</p>}
+      <form onSubmit={handleAddSubmit}>
+        <input type="text" placeholder="barrer, sacar al perro ..." name="task">
+        <input type="date" name="date">
+        <input type="time" name="hour">
+        <button type="submit">Agregar</button>
+      </form>
+    </header>
+    <main>
+      {tasks && <Tasks tasks={tasks} /> /* <-- renderiza la lista de tareas */}
+    </main>
+  )
+}
+```
+
+Como se explica en el código de useTasks (custom hook) al usar useMemo el cálculo sólo se hace si es necesario y si no devuelve lo que calculó con anterioridad, esto es necesario porque el cálculo que queremos realizar debe estar en el cuerpo del hook y por ende si no usamos el useMemo lo que ocurre es que vuelve a calcularse cada vez que escribimos o borramos en el input de busqueda, esto porque el valor del estado "search" y por ende se ejecuta el código del useTasks para reflejar ese cambio y por lo tanto volvería a pasar por el código de ordenamiento.
+
+### useCallback
+
+El useCallback sirve para simplificar la sintaxis a la hora de memoizar una función, fijemonos que en el ejemplo del useMemo en el hook "useTasks" creamos la función "getTasks", por cómo está construida la aplicación esta función se vuelve a crear una y otra vez cada vez que cambia el estado "search", con el useMemo podriamos solucionarlo de la siguiente forma
+
+```jsx
+// path: ./hooks/useTask.js
+import { useState, useRef, useMemo } from 'react'
+import { searchTasks, addTask } from '../services/tasks'
+
+export function useTasks ({ sortByTaskTitle, search }) {
+  const [tasks, setTasks] = useState([])
+  const previousSearch = useRef()
+
+  const getTasks = useMemo(() => {
+    return async ({ search }) => {
+      if (search === previousSearch.current) return
+
+      try {
+        previousSearch.current = search
+
+        const newTasks = await searchTasks()
+
+        setTasks(newTasks)
+      } catch (e) {
+        console.error(e)
+      }
+    }
+  }, []) // <-- hacemos que cree la función una única vez
+
+  // ...
+}
+```
+
+No obstante hacerlo de esta forma resulta raro ya que hacer una función que devuelva otra de esa forma es un poco raro, es para eso que podemos usar el useCallback de la siguiente manera:
+
+```jsx
+import { useState, useRef, useMemo, useCallback } from 'react'
+import { searchTasks, addTask } from '../services/tasks'
+
+export function useTasks ({ sortByTaskTitle, search }) {
+  const [tasks, setTasks] = useState([])
+  const previousSearch = useRef()
+
+  // useCallback(función a memoizar, dependencias)
+  const getTasks = useCallback(async ({ search }) => {
+      if (search === previousSearch.current) return
+
+      try {
+        previousSearch.current = search
+
+        const newTasks = await searchTasks()
+
+        setTasks(newTasks)
+      } catch (e) {
+        console.error(e)
+      }
+    }
+  , []) // <-- hacemos que cree la función una única vez
+
+  // ...
+}
+```
+
+useCallback por debajo usa useMemo para la memoización, por lo que ambos son equivalentes, la única diferencia es que el useCallback tiene una sintaxis más fácil cuando queremos memoizar una función
+
+Para ver un pequeño proyecto con useRef, useMemo y useCallback ver el [sexto proyecto de ejemplo](./3.example-projects/06-buscador-peliculas/).
+
+Cabe aclarar que tanto el useMemo como el useCallback es preferible usarlos sólo si tenemos problemas de rendimiento, si el cálculo ha realizar o la función que se crea son muy sencillas no merece la pena utilizarlos.
+
+## React Developer Tools
+
+Es una extensión para navegadores que añade dos pestañas a las herramientas de desarrollo, en primer lugar otorga el apartado "components" que nos permite ver el árbol de componentes, esto ayuda a ver como se estructura nuestra app internamente; y en segundo lugar añade la pestaña "profiler" que nos permite ver cada vez que se renderiza algo, cuánto tarda y qué causó el renderizado.
+
+Los enlaces a las extensiones de Chrome, FireFox y Edge se encuentran en el repositorio de React exactamente [aquí](https://github.com/facebook/react/tree/main/packages/react-devtools-extensions)

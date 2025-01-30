@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 export default function usePokemonInfo ({ pokemonId }) {
   const [pokemonName, setPokemonName] = useState()
   const [imgUrl, setImgUrl] = useState()
-  const [pokemonTypes, setPokemonTypes] = useState([])
+  const [pokemonTypes, setPokemonTypes] = useState()
 
   useEffect(() => {
     fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonId}`)

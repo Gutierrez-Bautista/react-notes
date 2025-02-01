@@ -857,6 +857,19 @@ export function PokemonCard ({ pokemonId }) {
 
 Una vez hecho esto podríamos pasar nuestro custom hook a un directorio llamado "hooks" para así poder reutilizarlo más adelante (ver [5 proyecto de ejemplo](3.example-projects/05.pokemon-card/))
 
+## Prop Drilling
+
+Hace referencia a pasar una propiedad de un componente hacia "abajo", es decir, a algún componente que es hijo no directo de él. Supongamos que tenemos una aplicación que tiene la siguiente estructura de componentes:
+
+App --> Header
+  |---> Main --> Section --> Titulo
+  |                 |------> ContenidoSection
+  |---> Aside --> Filters
+
+Y tenemos en nuestro componente App una prop que nececita ContenidoSection para renderizar correctamente, pero además de eso también necesitamos pasarle esa prop al componente Filters, ese proceso de hacer que una prop baje niveles es lo que llamamos Prop Drilling.
+
+Cabe aclarar que esto en general es una mala práctica y se recomienda evitarlo en la medida de lo posible.
+
 ## Más Hooks de React
 
 ### useRef
@@ -1079,6 +1092,358 @@ useCallback por debajo usa useMemo para la memoización, por lo que ambos son eq
 Para ver un pequeño proyecto con useRef, useMemo y useCallback ver el [sexto proyecto de ejemplo](./3.example-projects/06-buscador-peliculas/).
 
 Cabe aclarar que tanto el useMemo como el useCallback es preferible usarlos sólo si tenemos problemas de rendimiento, si el cálculo ha realizar o la función que se crea son muy sencillas no merece la pena utilizarlos.
+
+### useContext
+
+El contexto permite que cierta información del componente padre esté disponible en cualquier componente del árbol que esté por debajo de él sin importar qué tan profundo sea [fuente](https://es.react.dev/learn/passing-data-deeply-with-context). Esto se hace para poder evitar el Prop Drilling.
+
+Podríamos pensarlo con el siguiente esquema:
+
+![diagrama de una aplicación con el contexto a un lado como una burbuja](./images/context-example.png)
+
+Como podemos ver el contexto es algo aparte de la aplicación que cualquier componente puede acceder sin necesidad de que lo pasemos de forma explicita. Pero para ello devemos envolver la aplicación con un Context Provider, que es el encargado de hacer que esos componentes tengan acceso al contexto, ya que por defecto no lo tienen.
+
+![diagrama de ejemplo del context provider](./images/context-provider-example.png)
+
+Con esto podemos decir que los pasos para crear un contexto son los siguientes:
+- Crear el contexto en sí
+- Proveer el contexto: decir que parte de la aplicación tiene acceso a este
+- Consumir el contexto
+
+Para ello nececitamos primero crear un archivo encargado de crear todo lo necesario para el contexto:
+
+```jsx
+// path: ./context/my-context.jsx
+import { createContext } from 'react'
+
+// Crear contexto || Tambien es lo que vamos a consumir
+export const myContext = createContext()
+
+// Crear provider
+export function myContextProvider ({ children }) {
+  return (
+    <FiltersContext.Provider value={{
+      key1: 'value1',
+      key2: 36,
+      key3: true
+    }}
+    >
+      {children}
+    </FiltersContext.Provider>
+  )
+}
+```
+
+Una vez hecho esto vamos a donde renderizamos el componente de más alto nivel que nececita el contexto y lo envolvemos con el provider, en nuestro caso queremos que toda la aplicación pueda hacerlo por lo que nos dirigimos a nuestro "main.jsx" que quedaría de la siguiente manera:
+
+```jsx
+import { createRoot } from 'react-dom/client'
+import App from './App'
+import { myContextProvider } from './context/my-context.jsx'
+import './index.css'
+
+createRoot(document.getElementById('app')).render(
+  <myContextProvider>
+    <App />
+  </myContextProvider>
+)
+```
+
+Por último nos dirigimos a donde deseemos consumir nuestro contexto, debe ser un hijo de App, y agregamos lo siguiente:
+
+```jsx
+// path: ./components/Filters.jsx
+import { useContext } from 'react'
+import { myContext } from '../context/my-context'
+
+export function Filters () {
+  // ...
+  const contextValue = useContext(myContext)
+  // ...
+}
+```
+
+Este contexto que acabamos de crear es estático por lo que no nos sirve si lo que queremos es modificarlo, pero crear contextos estáticos es útil en casos de configuraciones como el theme, tamaño de fuente, etc.
+
+Para crear un contexto dinámico tenemos que usar un estado de la siguiente forma:
+
+```jsx
+// path: ./context/my-context.jsx
+import { createContext, useState } from 'react'
+
+export const myContext = createContext()
+
+export function myContextProvider ({ children }) {
+  // se llaman estados globales a aquellos estados que envuelven toda la aplicación
+  const [estadoGlobal, setEstadoGlobal] = useState({
+    key1: 'value1',
+    key2: 36,
+    key3: true
+  })
+
+return (
+    <FiltersContext.Provider value={{
+      estadoGlobal,
+      setEstadoGlobal
+    }}
+    >
+      {children}
+    </FiltersContext.Provider>
+  )
+}
+```
+
+Ahora al consumirlo lo hacemos de la siguiente manera:
+
+```jsx
+// path: ./components/Filters.jsx
+import { useContext } from 'react'
+import { myContext } from '../context/my-context'
+
+export function Filters () {
+  // ...
+
+  // de esta forma tenemos tanto el estado como su setter
+  const { estadoGlobal, setEstadoGlobal } = useContext(myContext)
+  // ...
+}
+```
+
+El useContext suele ser mejor para estados globales pequeños o que cambien bastante poco y de forma controlada, en el caso de que los cambios de estado sean muy complejos o deseemos hacer cambios quirurjicos es más recomendable usar cosas como Redux (a día de hoy poco recomendable), Zustand u otras alternativas.
+
+### useReducer
+
+Es un hook que permite manejar los estados de una manera más escalable porque se basa en recibir en una función el estado actual y la acción que debe hacer.
+
+Supngamos que tenemos el siguiente estado:
+
+```jsx
+// path: ./context/cart.jsx
+import { createContext } from 'react'
+
+export const CartContext = createContext()
+
+export function CartProvider ({ children }) {
+  const [cart, setCart] = useState([])
+
+  const addToCart = product => {
+    // check if product is already in the cart
+    const productInCartIndex = cart.findIndex(item => item.id === product.id)
+
+    if (productInCartIndex !== -1) {
+      const newCart = structuredClone(cart)
+      newCart[productInCartIndex].quantity += 1
+      return setCart(newCart)
+    }
+
+    setCart([
+      ...cart,
+      {
+        ...product,
+        quantity: 1
+      }
+    ])
+  }
+
+  const removeFromCart = product => {
+    setCart(prevState => prevState.filter(item => item.id !== product.id))
+  }
+
+  const clearCart = () => {
+    setCart([])
+  }
+
+  return (
+    <CartContext.Provider value={{
+      cart,
+      addToCart,
+      removeFromCart,
+      clearCart
+    }}
+    >
+      {children}
+    </CartContext.Provider>
+  )
+}
+```
+
+Es fácil notar que es incomodo ver cómo funciona, esto proque tenemos en nuestro privider una mezcla entre lo que tiene que devolver con el manejo del estado, es aquí donde entran los reducers.
+
+En primer lugar devemos crear nuestro reducer extrayendo la lógica del manejo del estado, lo que quedaría de la siguiente manera:
+
+```jsx
+// path: ./context/cart.jsx
+import { createContext } from 'react'
+
+export const CartContext = createContext()
+
+const initialState = []
+const reducer = (state, action) => {
+  const { type: actionType, payload: actionPayload } = action
+
+  // Dependiendo de la acción hacemos un proecso u otro, por lo general se hace con un switch pero es cuestión de gustos
+  switch (actionType) {
+    case 'ADD_TO_CART': {
+      const { id } = actionPayload
+      const productInCartIndex = state.findIndex(item => item.id === id)
+
+      if (productInCartIndex !== -1) {
+        const newState = structuredClone(state)
+        newState[productInCartIndex].quantity += 1
+        return newState
+      }
+
+      return [
+        ...state,
+        {
+          ...actionPayload,
+          quantity: 1
+        }
+      ]
+    }
+
+    case 'REMOVE_FROM_CART': {
+      const { id } = actionPayload
+      return state.filter(item => item.id !== id)
+    }
+
+    case 'CLEAR_CART': {
+      return initialState
+    }
+  }
+}
+
+// ...
+```
+
+Ahora, para usar nuestro reducer nos apoyamos del hook useReducer:
+
+```jsx
+import { createContext, useReducer } from 'react'
+
+export const CartContext = createContext()
+
+const initialState = []
+const reducer = (state, action) => {
+  // ...
+}
+
+export function CartProvider ({ children }) {
+  // state es un estado igual que el que devuelve el useState, por otro lado el dispatch es una función que se encarga de llamar a nuestro reducer con el valor que tenia el estatdo hasta ese momento
+  const [state, dispatch] = useReducer(reducer, initialState)
+
+  const addToCart = product => dispatch({
+    type: 'ADD_TO_CART',
+    payload: product
+  })
+
+  const removeFromCart = product => dispatch({
+    type: 'REMOVE_FROM_CART',
+    payload: product
+  })
+
+  const clearCart = () => dispatch({ type: 'CLEAR_CART' })
+
+  return (
+    <CartContext.Provider value={{
+      cart: state,
+      addToCart,
+      removeFromCart,
+      clearCart
+    }}
+    >
+      {children}
+    </CartContext.Provider>
+  )
+}
+```
+
+Hacer esto es conveniente porque nos permite extraer la lógica de la actualización de estados lo que permite migrarla entre frameworks sin tantos inconvenientes además de que es mucho más fácil hacer testing ya que el reducer es una función que podemos llamar
+
+### useId
+
+Lo que hace es generar un ID único en toda la aplicación que siempre es el mismo y que es compatible con SSR.
+
+Un ejemplo de uso podría ser el siguiente
+
+```jsx
+// Vamos a omitir sintaxis que haría que el filtro funcione para simplificar el código
+import { useState } from 'react'
+import './Filters.css'
+
+export function Filters () {
+  const [minPrice, setMinPrice] = useState(0)
+
+  const handleChangeMinPrice = (evt) => {
+    setMinPrice(evt.target.value)
+  }
+
+  return (
+    <section className='filters'>
+      <div>
+        {/* htmlFor es equivalente al atributo "for" de los label en HTML */}
+        <label htmlFor='price'>Minimum price:</label>
+        <input
+          type='range'
+          id='price' {/* <-- nuestro problema está acá */}
+          min='0'
+          max='1000'
+          onChange={handleChangeMinPrice}
+        />
+        <span>{minPrice}</span>
+      </div>
+      <div>
+        <label htmlFor='category'>Category</label>
+        <select id='category'> {/* <-- nuestro problema también está acá */}
+          {/* ... */}
+        </select>
+      </div>
+    </section>
+  )
+}
+```
+
+El problema que tiene ese código es que en una aplicación grande es más que probable que terminemos repitiendo IDs, y aunque podríamos intentar hacer cosas como "fiters-price" para solucionarlo aún así estamos dependiedo de acordarnos nosotros las IDs que ya hemos utilizado. Es ahí donde entra el hook useId para solucionar este problema
+
+```jsx
+// Vamos a omitir sintaxis que haría que el filtro funcione para simplificar el código
+import { useState, useId } from 'react'
+import './Filters.css'
+
+export function Filters () {
+  const [minPrice, setMinPrice] = useState(0)
+  const minPriceFilterId = useId()
+  const categoryFilterId = useId()
+
+  const handleChangeMinPrice = (evt) => {
+    setMinPrice(evt.target.value)
+  }
+
+  return (
+    <section className='filters'>
+      <div>
+        <label htmlFor={minPriceFilterId}>Minimum price:</label>
+        <input
+          type='range'
+          id={minPriceFilterId} {/* <-- con esto el problema se soluciona */}
+          min='0'
+          max='1000'
+          onChange={handleChangeMinPrice}
+        />
+        <span>{minPrice}</span>
+      </div>
+      <div>
+        <label htmlFor={categoryFilterId}>Category</label>
+        <select id={categoryFilterId}>
+          {/* ... */}
+        </select>
+      </div>
+    </section>
+  )
+}
+```
+
+Lo que hace useId internamente es asignarle una ID según el lugar y el orden en el que se llamó el hook y como los hooks en React siempre mantienen el mismo orden de llamada las ID no se repiten en toda la app.
 
 ## React Developer Tools
 

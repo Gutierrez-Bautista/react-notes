@@ -15,7 +15,7 @@ export function useMovies ({ search, sort }) {
       setError(null)
       previousSearch.current = search
 
-      const newMovies = await searchMovies({search})
+      const newMovies = await searchMovies({ search })
 
       setMovies(newMovies)
     } catch (e) {
@@ -35,5 +35,5 @@ export function useMovies ({ search, sort }) {
       : movies
   }, [sort, movies])
 
-  return { movies: sortedMovies, getMovies, loading, error}
+  return { movies: sortedMovies, getMovies, loading, error }
 }

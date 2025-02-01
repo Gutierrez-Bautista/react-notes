@@ -12,13 +12,14 @@ export function PokemonCard ({ id }) {
 
   return (
     <div className='card'>
-      <div className="info">
+      <div className='info'>
         {pokemonName && <h3>{pokemonId}: {pokemonName}</h3>}
         {imgUrl && <img src={imgUrl} />}
-        {pokemonTypes && <div className='types-container'>
-          <span>{pokemonTypes[0].type.name}</span>
-          {pokemonTypes[1] && <span>{pokemonTypes[1].type.name}</span>}
-        </div>}
+        {pokemonTypes &&
+          <div className='types-container'>
+            <span>{pokemonTypes[0].type.name}</span>
+            {pokemonTypes[1] && <span>{pokemonTypes[1].type.name}</span>}
+          </div>}
       </div>
       <button onClick={handleClick}>New Random Pokemon</button>
     </div>

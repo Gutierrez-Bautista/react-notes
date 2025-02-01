@@ -5,7 +5,7 @@ export const searchMovies = async ({ search }) => {
   let moviesJson
 
   try {
-    const res =  await fetch(`https://www.omdbapi.com/?apikey=${API_KEY}&s=${search}`)
+    const res = await fetch(`https://www.omdbapi.com/?apikey=${API_KEY}&s=${search}`)
 
     moviesJson = await res.json()
   } catch {

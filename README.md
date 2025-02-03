@@ -857,6 +857,12 @@ export function PokemonCard ({ pokemonId }) {
 
 Una vez hecho esto podríamos pasar nuestro custom hook a un directorio llamado "hooks" para así poder reutilizarlo más adelante (ver [5 proyecto de ejemplo](3.example-projects/05.pokemon-card/))
 
+## React Developer Tools
+
+Es una extensión para navegadores que añade dos pestañas a las herramientas de desarrollo, en primer lugar otorga el apartado "components" que nos permite ver el árbol de componentes, esto ayuda a ver como se estructura nuestra app internamente; y en segundo lugar añade la pestaña "profiler" que nos permite ver cada vez que se renderiza algo, cuánto tarda y qué causó el renderizado.
+
+Los enlaces a las extensiones de Chrome, FireFox y Edge se encuentran en el repositorio de React exactamente [aquí](https://github.com/facebook/react/tree/main/packages/react-devtools-extensions)
+
 ## Prop Drilling
 
 Hace referencia a pasar una propiedad de un componente hacia "abajo", es decir, a algún componente que es hijo no directo de él. Supongamos que tenemos una aplicación que tiene la siguiente estructura de componentes:
@@ -1445,8 +1451,74 @@ export function Filters () {
 
 Lo que hace useId internamente es asignarle una ID según el lugar y el orden en el que se llamó el hook y como los hooks en React siempre mantienen el mismo orden de llamada las ID no se repiten en toda la app.
 
-## React Developer Tools
+Pude verse un ejemplo del uso de useContext, useReducer y useId en el [séptimo proyecto de ejemplo](./3.example-projects/07-ecommers-shopping-cart/)
 
-Es una extensión para navegadores que añade dos pestañas a las herramientas de desarrollo, en primer lugar otorga el apartado "components" que nos permite ver el árbol de componentes, esto ayuda a ver como se estructura nuestra app internamente; y en segundo lugar añade la pestaña "profiler" que nos permite ver cada vez que se renderiza algo, cuánto tarda y qué causó el renderizado.
+## Lazy Load y Suspense
 
-Los enlaces a las extensiones de Chrome, FireFox y Edge se encuentran en el repositorio de React exactamente [aquí](https://github.com/facebook/react/tree/main/packages/react-devtools-extensions)
+Lazy Load es un concepto que hace referencia a cargar cierto código sólo cuando se necesita, veamos un ejemplo donde se renderiza código innecesario:
+
+```jsx
+import { useState } from 'react'
+import { Image } from './components/Image' // import estático
+
+export default function App () {
+  const [renderImg, setRenderImg] = useState(false)
+
+  return (
+    <>
+      <div>
+        <button onClick={() => setRenderImg(prev => !prev)}>Render image Component</button>
+      </div>
+      {renderImg && <Image src='./imgs/cat.png' text='Orange cat sleeping at the bathroom' />}
+    </>
+  )
+}
+```
+
+Notese que cuando iniciamos la aplicación el componente Image no se renderiza, no obstante su código es descargado por el cliente, en nuestro ejemplo esto no es importante pero en aplicaciones más complejas esto puede resultar en un problema de rendimiento, es para esto que React provee la función "lazy" que se encarga de decir que se cargue ese componente cuando se renderice por primera vez y no en cuanto lee la linea.
+
+Para hacer eso debemos pasarle a la función lazy otra función que devuelva el "import" (función de JS) del componente:
+
+```jsx
+import { useState, lazy } from 'react'
+
+const lazyImage = lazy(() => import('./components/Image'))
+
+export default function App () {
+  const [renderImg, setRenderImg] = useState(false)
+
+  return (
+    <>
+      <div>
+        <button onClick={() => setRenderImg(prev => !prev)}>Render image Component</button>
+      </div>
+      {renderImg && <lazyImage src='./imgs/cat.png' text='Orange cat sleeping at the bathroom' />}
+    </>
+  )
+}
+```
+
+No obstante esto aún no funciona, si intetamos probar este código React nos dirá que no pudo acceder al componente lazyImage, esto ocurre porque por defecto React espera que ya tengamos todo el código que puede llegar a usar cargados, para especificar que hay partes del código debemos hacer uso del componente de React Suspense cuya función es decir que algo de lo que envuelve debe ser cargado según demanda.
+
+```jsx
+import { useState, lazy, Suspense } from 'react'
+
+const lazyImage = lazy(() => import('./components/Image'))
+
+export default function App () {
+  const [renderImg, setRenderImg] = useState(false)
+
+  return (
+    <Suspense>
+      <div>
+        <button onClick={() => setRenderImg(prev => !prev)}>Render image Component</button>
+      </div>
+      {renderImg && <lazyImage src='./imgs/cat.png' text='Orange cat sleeping at the bathroom' />}
+    </Suspense>
+  )
+}
+```
+
+Con esto nuestro código funciona, si vemos las herramientas de desarrollo en el apartado de Red vemos que tanto el código de Image como la imagen en "./imgs/cat.png" no se descargan hasta que le damos al botón
+
+El [proyecto de ejemplo 8](./3.example-projects/08-react-router/) usa lazy en el archivo App.jsx pero no es muy distinto de lo que acabamos de ver
